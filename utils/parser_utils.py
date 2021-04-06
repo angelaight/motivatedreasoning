@@ -4,6 +4,9 @@ import lxml
 import os
 import datetime as dt
 
+import json
+import zipfile
+
 class fileMetadataExtractor():
     def __init__(self, fileContent):
         self.fileMetadata = {}
@@ -157,6 +160,9 @@ class caseMetadataExtractor():
             except:
                 return None
         else:
+            if item is None:
+                return None
+
             try:
                 return item[attribute]
             except AttributeError:
@@ -166,8 +172,14 @@ class caseMetadataExtractor():
 
         
     def caseName(self):
-        self.fullCaseName = self.null_check(self.courtCaseDocHead.find('casename').find('fullcasename'), 'text')
-        self.shortCaseName = self.null_check(self.courtCaseDocHead.find('casename').find('shortcasename'), 'text')
+        try:
+            self.fullCaseName = self.null_check(self.courtCaseDocHead.find('casename').find('fullcasename'), 'text')
+        except:
+            self.fullCaseName = None
+        try:
+            self.shortCaseName = self.null_check(self.courtCaseDocHead.find('casename').find('shortcasename'), 'text')
+        except:
+            self.shortCaseName = None
         try:
             self.party1 = self.null_check(self.courtCaseDocHead.find('casename').find('shortcasename'), 'party1')
         except:
@@ -184,7 +196,10 @@ class caseMetadataExtractor():
     
     def courtInfo(self):
         info = self.courtCaseDocHead.find('courtinfo')
-        self.courtName = self.null_check(info.find('courtname'), 'text')
+        try:
+            self.courtName = self.null_check(info.find('courtname'), 'text')
+        except:
+            self.courtName = None
         #self.jurisdiction = self.null_check(info.find('jurisdiction'), 'text')
         #self.normalizedLongName = self.null_check(self.jurisdiction, 'normalizedlongname')
         #self.normalizedShortName = self.null_check(self.jurisdiction, 'normalizedshortname')
@@ -460,7 +475,9 @@ def parse_file(fpath, content=None, zipped_file=True):
             n_iter = None        
         
         for item in c[3::2]:
-            
+            if '<?xml' not in item:
+                continue
+
             case = caseMetadataExtractor(item)
             case.modify_input()
             case_meta = case.get_all_info()
@@ -614,10 +631,40 @@ def parse_file(fpath, content=None, zipped_file=True):
                 }
             
             data.append(d)
+    
+    with open(outfile, 'a') as fout:
+        json.dump(data, fout, default = str)
+
     return data
 
 
 if __name__ == "__main__":
-    fpaths = [os.path.join('data/raw_data/', x) for x in os.listdir('data/raw_data/')]
-    for path in fpaths[:1]:
-        print(parse_file(path, zipped_file=False))
+
+    parse_from_zip = True
+    outfile = 'data/data.json'
+
+    if not parse_from_zip:
+        fpaths = [os.path.join('data/raw_data/', x) for x in os.listdir('data/raw_data/')]
+        for path in fpaths[:1]:
+            print(parse_file(path, zipped_file=False))
+    
+    else:
+        if os.path.exists(outfile):
+            os.remove(outfile)
+
+        zip_path = 'data/opinions/6411.zip'
+        zf = zipfile.ZipFile(zip_path, 'r')
+        xml_list = zf.namelist()
+
+        counter = 0
+        for path in xml_list:
+            if path.endswith('/'):
+                continue
+
+            print('parsing ' + path)
+            
+            f = zf.open(path)
+            xml_content = f.read().decode('utf-8')
+            parse_file(zip_path, content = xml_content, zipped_file = True)
+            
+
