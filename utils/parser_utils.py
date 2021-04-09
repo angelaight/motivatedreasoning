@@ -399,7 +399,36 @@ class caseMetadataExtractor():
         
         return self.metadata
 
-# parse data from file 
+import re
+
+def padding_function(x,y):
+    if not (x and y):
+        return None
+    if len(y)<5:
+        return x+'0'*(5-len(y))+y
+    elif len(y)==5:
+        return x+y
+    else:
+        return None
+
+def standardize_docket_num(s):
+    nums = re.findall('[0-9]+', s)
+    if len(nums)==2:
+        return padding_function(*nums)
+    elif len(nums) > 2:
+        ret_list = []
+        for i in range(len(nums)//2):
+            
+            ret_list.append(padding_function(*nums[2*i:2*i+2]))
+            if len(nums) % 2 == 1:
+                ret_list.append(nums[-1])
+            
+        return '|'.join(ret_list)
+    elif len(nums) == 1:
+        return nums[0]
+    else:
+        return None
+
 
 # parse data from file 
 def parse_file(fpath, content=None, zipped_file=True, outfile=None):
@@ -628,13 +657,46 @@ def parse_file(fpath, content=None, zipped_file=True, outfile=None):
                 'doc_details': doc_details,
                 'classes' : classes,
                 'case_text': {'case_text':case_text}
-                }
+            }
             
-            data.append(d)
+            flattened_d = {
+                'file_entry_bundle_id' : d['case_meta']['file_entry_bundle_id'],
+                'docket_num' : d['case_meta']['docket_num'],
+                'docket_num_standardized' : standardize_docket_num(d['case_meta']['docket_num']),
+                'docket_num_normalized' : d['case_meta']['docket_num_normalized'],
+                'full_case_name' : d['case_meta']['full_case_name'],
+                'short_case_name' : d['case_meta']['short_case_name'],
+                'party_1' : d['case_meta']['party_1'],
+                'party_2' : d['case_meta']['party_2'],
+                'court_name' : d['case_meta']['court_name'],
+                'court_code' : d['case_meta']['court_code'],
+                'this_case_cite' : d['case_meta']['this_case_cite'],
+                'this_cite_definition' : d['case_meta']['this_cite_definition'],
+                'this_cite_page_scheme' : d['case_meta']['this_cite_page_scheme'],
+                'case_opinion_by' : d['case_meta']['case_opinion_by'],
+                'judges' : d['case_meta']['judges'],
+                'decision_date_str' : d['case_meta']['decision_date_str'],
+                'decision_date' : d['case_meta']['decision_date'],
+                'filing_date_str' : d['case_meta']['filing_date_str'],
+                'filing_date' : d['case_meta']['filing_date'],
+                'dc_creator' : d['case_meta']['dc_creator'],
+                'dc_identifier' : d['case_meta']['dc_identifier'],
+                'dc_identifier_scheme' : d['case_meta']['dc_identifier_scheme'],
+                'dc_source' : d['case_meta']['dc_source'],
+                'dc_date' : d['case_meta']['dc_date'],
+                'pagination_scheme' : d['case_meta']['pagination_scheme'],
+                'cited_docs': cited_docs,
+                'doc_details': doc_details,
+                'classes' : classes
+            }
+            
+            data.append(flattened_d)
     
     if outfile is not None:
         with open(outfile, 'a') as fout:
-            json.dump(data, fout, default = str)
+            for d in data:
+                json.dump(d, fout, default = str)
+                fout.write('\n')
 
     return data
 
