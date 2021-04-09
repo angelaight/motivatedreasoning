@@ -412,6 +412,9 @@ def padding_function(x,y):
         return None
 
 def standardize_docket_num(s):
+    if s is None:
+        return None
+    
     nums = re.findall('[0-9]+', s)
     if len(nums)==2:
         return padding_function(*nums)
