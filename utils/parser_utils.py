@@ -402,7 +402,7 @@ class caseMetadataExtractor():
 # parse data from file 
 
 # parse data from file 
-def parse_file(fpath, content=None, zipped_file=True):
+def parse_file(fpath, content=None, zipped_file=True, outfile=None):
     """ read file and extract as lists to input into the database
 
     Args:
@@ -632,10 +632,31 @@ def parse_file(fpath, content=None, zipped_file=True):
             
             data.append(d)
     
-    with open(outfile, 'a') as fout:
-        json.dump(data, fout, default = str)
+    if outfile is not None:
+        with open(outfile, 'a') as fout:
+            json.dump(data, fout, default = str)
 
     return data
+
+
+def parse_zip(zip_path, outfile):
+
+    if os.path.exists(outfile):
+        os.remove(outfile)
+
+    zf = zipfile.ZipFile(zip_path, 'r')
+    xml_list = zf.namelist()
+
+    for path in xml_list:
+        if path.endswith('/'):
+            continue
+
+        print('parsing ' + path)
+        
+        f = zf.open(path)
+        xml_content = f.read().decode('utf-8')
+        parse_file(zip_path, content = xml_content, zipped_file = True, outfile = outfile)
+
 
 
 if __name__ == "__main__":
@@ -653,18 +674,5 @@ if __name__ == "__main__":
             os.remove(outfile)
 
         zip_path = 'data/opinions/6411.zip'
-        zf = zipfile.ZipFile(zip_path, 'r')
-        xml_list = zf.namelist()
-
-        counter = 0
-        for path in xml_list:
-            if path.endswith('/'):
-                continue
-
-            print('parsing ' + path)
-            
-            f = zf.open(path)
-            xml_content = f.read().decode('utf-8')
-            parse_file(zip_path, content = xml_content, zipped_file = True)
-            
+        parse_zip(zip_path, outfile)
 
