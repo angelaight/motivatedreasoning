@@ -5,7 +5,7 @@
 #SBATCH --error=./output/%j_%x.err
 #SBATCH --export=ALL
 #SBATCH --cpus-per-task=1
-#SBATCH --mem=36G
+#SBATCH --mem=80G
 #SBATCH --time=1-0
 #SBATCH --mail-type=END
 #SBATCH --mail-user=ayl316@nyu.edu
