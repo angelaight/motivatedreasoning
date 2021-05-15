@@ -17,6 +17,8 @@ The main files of the project are described as below:
     |   ├── feature-engg.ipynb              Feature engineering from raw files
     |   └── randomization-test-fe.ipynb     Randomization test for random treatment assignment with fixed effects
     ├── results
+    |   ├── cate-1M.png                     Distribution of CATE estimates on 1M samples
+    |   ├── cate-50k.png                    Distribution of CATE estimates on 50k samples
     |   ├── shap-democrats.png              SHAP values for democrats favoring plaintiff vs defendant
     |   ├── shap-republicans.png            SHAP values for republican favoring plaintiff vs defendant
     |   ├── xgb-imp-democrats.png           XG-Boost feature importances for democrat model
