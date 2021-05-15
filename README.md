@@ -6,12 +6,13 @@ This project aims to answer the question posed by the DE JURE: Motivated Reasoni
 
 ## Project Structure
 
-The main files of the project are described as below: \\
+The main files of the project are described as below: 
 
     .
     ├── artifacts                           Artifacts (sample data, metadata, sample case structure)
     ├── notebooks
     |   ├── cate-3.ipynb                    CATE estimation (casualml package from Uber)
+    |   ├── cate-4-X-by-party.ipynb         Draw inferences from cases where judges favor the plaintiffs or the defendants
     |   ├── cate-dowhy.ipynb                CATE estimation (dowhy package from Microsoft)
     |   ├── feature-engg.ipynb              Feature engineering from raw files
     |   └── randomization-test-fe.ipynb     Randomization test for random treatment assignment with fixed effects
